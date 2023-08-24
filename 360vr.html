@@ -69,7 +69,7 @@
         const aAssetsElement = document.getElementById("links");
         if (locationID === "1") {
         var entityElement = document.createElement("a-entity");
-                    entityElement.setAttribute("sound", "src: assets/sound/benninhkieu.mp3; autoplay: true");
+                    entityElement.setAttribute("sound", `src: assets/sound/benninhkieu.mp3; autoplay: true`);
                     aAssetsElement.appendChild(entityElement);
         }
         fetch(apiUrl)
