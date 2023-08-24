@@ -70,9 +70,7 @@
             .then(response => response.json())
             .then(data => {
                 const {locationID, image1, thumbImage1, image2, thumbImage2, image3, thumbImage3 } = data;
-if (locationID == "1"){
-   document.getElementById("links").sound = `src: assets/sound/benninhkieu.mp3; autoplay: true`;
-}
+                const linksEntity = document.getElementById("links");
                 // Update the image source attributes
                 document.getElementById("image1").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${image1}`;
                 document.getElementById("thumb-image1").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${thumbImage1}`;
@@ -80,6 +78,9 @@ if (locationID == "1"){
                 document.getElementById("thumb-image2").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${thumbImage2}`;
                 document.getElementById("image3").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${image3}`;
                 document.getElementById("thumb-image3").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${thumbImage3}`;
+                if (locationID === "1") {
+                linksEntity.setAttribute("sound", "src: assets/sound/benninhkieu.mp3; autoplay: true");
+            }
             })
             .catch(error => console.error("Error fetching data:", error));
     </script>
