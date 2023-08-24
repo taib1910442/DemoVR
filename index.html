@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>360&deg; Image Gallery</title>
+    <meta name="description" content="360&deg; Image Gallery - A-Frame">
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
+    <script
+        src="https://unpkg.com/aframe-proxy-event-component@2.1.0/dist/aframe-proxy-event-component.min.js"></script>
+<style>
+    .notification {
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f0f0f0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        transition: top 0.5s ease-in-out;
+    }
+    
+    .notification.show {
+        top: 50px; 
+        transition: top 0.5s ease-in-out;
+    }
+    
+</style>
+    <!-- Image link template to be reused. -->
+    <script id="link" type="text/html">
+      <a-entity class="link"
+        geometry="primitive: plane; height: 1; width: 1"
+        material="shader: flat; src: ${thumb}"
+        event-set__mouseenter="scale: 1.2 1.2 1"
+        event-set__mouseleave="scale: 1 1 1"
+        event-set__click="_target: #image-360; _delay: 300; material.src: ${src}"
+        proxy-event="event: click; to: #image-360; as: fade"
+        sound="on: click; src: #click-sound"></a-entity>
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const notification = document.getElementById("notification");
+        
+            notification.classList.add("show");
+        
+            setTimeout(function() {
+                notification.classList.remove("show");
+            }, 10000); // 10000 milliseconds = 10 seconds
+        });
+        
+    </script>
+</head>
+
+<body>
+   
+    <a-scene>
+        <a-assets>
+            <img id="image" crossorigin="anonymous" src="" alt="Image 1">
+            <img id="thumb-image" crossorigin="anonymous" src="" alt="Thumbnail Image 1">
+            <audio id="click-sound" crossorigin="anonymous"
+                src="https://cdn.aframe.io/360-image-gallery-boilerplate/audio/click.ogg"></audio>
+
+        </a-assets>
+
+        <!-- 360-degree image. -->
+        <a-sky id="image-360" radius="10" src="#image"
+            animation__fade="property: components.material.material.color; type: color; from: #FFF; to: #000; dur: 300; startEvents: fade"
+            animation__fadeback="property: components.material.material.color; type: color; from: #000; to: #FFF; dur: 300; startEvents: animationcomplete__fade"></a-sky>
+
+        <!-- Image links. -->
+        <a-entity id="links" layout="type: grid; margin: 1.5" position="-7 -1 -4">
+            <a-entity template="src: #link" data-src="#image" data-thumb="#thumb-image"></a-entity>
+        </a-entity>
+        <a-entity id="notification" class="notification" position="0 2 -4" scale="1 1 1">
+            <a-text color="black">Nếu không thấy được hình ảnh, hãy tải lại trang</a-text>
+            <a-animation attribute="position"
+                from="0 2 -4" to="0 1 -4"
+                begin="show" dur="500"></a-animation>
+            <a-animation attribute="scale"
+                from="1 1 1" to="1 0 1"
+                begin="hide" dur="500"></a-animation>
+        </a-entity>
+        <!-- Camera + cursor. -->
+        <a-entity camera look-controls wasd-controls="acceleration:100" position="0 1.6 0">
+            <a-cursor id="cursor"
+                look-controls-enabled="false"
+                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+                animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+                event-set__mouseenter="_event: mouseenter; color: springgreen"
+                event-set__mouseleave="_event: mouseleave; color: black" raycaster="objects: .link"></a-cursor>
+        </a-entity>
+       
+        
+    </a-scene>
+    <script>
+        
+        var apiUrl = "http://localhost:8080/webVR_war/api/locations";
+        // Fetch data from the API
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(jsonResponse => {
+            const linksContainer = document.getElementById("links");
+            const aAssetsElement = document.querySelector("a-assets");
+            if (jsonResponse.length > 0) {
+                const firstLocation = jsonResponse[0];
+                const { image1, thumbImage1 } = firstLocation;
+                
+                document.getElementById("image").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${image1}`;
+                document.getElementById("thumb-image").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${thumbImage1}`;
+    
+                for (let index = 1; index < jsonResponse.length; index++) {
+                    const { image1, thumbImage1 } = jsonResponse[index];
+                    var imageElement = document.createElement("img");
+                    imageElement.id = `image${index + 1}`;
+                    imageElement.crossOrigin = "anonymous";
+                    imageElement.src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${image1}`;
+                    imageElement.alt = `Image ${index + 1}`;
+                    aAssetsElement.appendChild(imageElement);
+    
+                    // Create and set attributes for the thumbnail image element
+                    var thumbImageElement = document.createElement("img");
+                    thumbImageElement.id = `thumb-image${index + 1}`;
+                    thumbImageElement.crossOrigin = "anonymous";
+                    thumbImageElement.src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${thumbImage1}`;
+                    thumbImageElement.alt = `Thumbnail Image ${index + 1}`;
+                    aAssetsElement.appendChild(thumbImageElement);
+    
+                    var entityElement = document.createElement("a-entity");
+                    entityElement.setAttribute("data-src", `#image${index + 1}`);
+                    entityElement.setAttribute("data-thumb", `#thumb-image${index + 1}`);
+                    entityElement.setAttribute("template", "src: #link");
+                    linksContainer.appendChild(entityElement);
+                }
+            }
+        })
+        .catch(error => console.error("Error fetching data:", error));
+    </script>
+</body>
+
+</html>
