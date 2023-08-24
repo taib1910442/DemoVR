@@ -67,6 +67,10 @@
         // Replace with the actual URL of your API endpoint
         var apiUrl = "http://localhost:8080/webVR_war/api/location/" + locationID;
         // Fetch data from the API
+        if (locationID === "1") {
+        var entityElement = document.createElement("a-entity");
+                    entityElement.setAttribute("sound", "src: assets/sound/benninhkieu.mp3; autoplay: true");
+                    linksContainer.appendChild(entityElement);}
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
