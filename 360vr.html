@@ -71,8 +71,7 @@
             .then(data => {
                 const {locationID, image1, thumbImage1, image2, thumbImage2, image3, thumbImage3 } = data;
 if (locationID == "1"){
-    var sound = document.getElementById("links");
-    sound.sound = `src: assets/sound/benninhkieu.mp3; autoplay: true`;
+   document.getElementById("links").sound = `src: assets/sound/benninhkieu.mp3; autoplay: true`;
 }
                 // Update the image source attributes
                 document.getElementById("image1").src = `https://360imagez.s3.ap-southeast-2.amazonaws.com/${image1}`;
