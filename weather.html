@@ -5,23 +5,53 @@
     <meta charset="utf-8">
     <title>WebVR - Aframe - VR walkthrough</title>
     <meta name="description" content="WebVR - Aframe - VR walkthrough">
-<style>
-    html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* Tắt thanh cuộn nếu cần */
-      }
-      
-</style>
-
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Tắt thanh cuộn nếu cần */
+        }
+    </style>
+    <script>
+        const wordMap = {
+            "Light rain shower": "Mưa rào nhẹ",
+            "Sunny": "Nắng",
+            "Cloudy": "Âm u",
+            // Thêm các từ ngữ và tương ứng của chúng vào đây
+        };
+    </script>
 </head>
 
+<body>
     <div id="weatherapi-weather-widget-3"></div>
     <script type='text/javascript'
         src='https://www.weatherapi.com/weather/widget.ashx?loc=2713747&wid=3&tu=1&div=weatherapi-weather-widget-3'
         async></script><noscript><a href="https://www.weatherapi.com/weather/q/can-tho-2713747"
             alt="Hour by hour Can Tho weather">10 day hour by hour Can Tho weather</a></noscript>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Lấy tất cả các thẻ div trong tài liệu
+            const divElements = document.querySelectorAll('div');
+
+            // Lặp qua từng thẻ div
+            divElements.forEach((divElement) => {
+                // Lấy nội dung hiện tại của thẻ div
+                const currentText = divElement.textContent.trim();
+
+                // Kiểm tra xem từ ngữ có tương ứng trong wordMap không
+                if (wordMap[currentText]) {
+                    // Nếu có, thay đổi nội dung của thẻ div
+                    divElement.textContent = wordMap[currentText];
+                }
+            });
+
+        });
+
+    </script>
+</body>
 
 </html>
