@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lịch Trình Du Lịch Cần Thơ</title>
+</head>
+
+<body>
+    <h1>Lịch Trình Du Lịch Cần Thơ</h1>
+    <p>Nhập các địa điểm du lịch ở Cần Thơ:</p>
+    <textarea id="places" rows="4" cols="50"></textarea>
+    <p>Nhập ngân sách của bạn (VD: 1.000.000 VND):</p>
+    <input type="text" id="budget">
+    <p>Nhập sở thích cá nhân của bạn:</p>
+    <textarea id="preferences" rows="4" cols="50"></textarea>
+    <button onclick="generateItinerary()">Tạo Lịch Trình</button>
+    <h2>Kết quả:</h2>
+    <div id="itinerary"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.3/axios.min.js"></script>
+    <script>
+        function generateItinerary() {
+            const apiKey = "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";
+            const places = document.getElementById("places").value;
+            const budget = document.getElementById("budget").value;
+            const preferences = document.getElementById("preferences").value;
+
+            axios.post('https://api.openai.com/v1/completions', {
+                prompt: `Hãy tạo giúp tôi lịch trình du lịch tại Cần Thơ gồm các địa điểm nằm ở Cần Thơ, Việt Nam và .. ${places}, với ngân sách: ${budget} và sở thích cá nhân: ${preferences} thì nên đi đâu ở Cần Thơ?`,
+                max_tokens: 1000,
+                n: 1,
+                stop: null,
+                model: "text-davinci-003",
+                temperature: 0.9,
+                top_p: 1,
+                frequency_penalty: 0.1,
+                presence_penalty: 0.0,
+            }, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    Authorization: `Bearer ${apiKey}`,
+                }
+            })
+                .then(response => {
+                    const itinerary = response.data.choices[0].text;
+                    document.getElementById("itinerary").innerHTML = itinerary;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi gọi API OpenAI:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
