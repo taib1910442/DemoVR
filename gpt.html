@@ -3,54 +3,108 @@
 
 <head>
     <title>Lịch Trình Du Lịch Cần Thơ</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
 </head>
 
 <body>
     <h1>Lịch Trình Du Lịch Cần Thơ</h1>
-    <p>Nhập các địa điểm du lịch ở Cần Thơ:</p>
-    <textarea id="places" rows="4" cols="50"></textarea>
+    <p>Nhập số ngày bạn muốn du lịch (1 - 3 ngày):</p>
+    <input type="number" min="1" max="3" id="day" value="1">
     <p>Nhập ngân sách của bạn (VD: 1.000.000 VND):</p>
-    <input type="text" id="budget">
-    <p>Nhập sở thích cá nhân của bạn:</p>
-    <textarea id="preferences" rows="4" cols="50"></textarea>
+    <input id="budget" class="form-control just-number price-format-input" placeholder="Nhập số tiền">
+    <p>Nhập sở thích du lịch của bạn:</p>
+    <textarea id="preferences" rows="4" cols="50"></textarea><br>
     <button onclick="generateItinerary()">Tạo Lịch Trình</button>
     <h2>Kết quả:</h2>
+    <div id="loading" style="display: none;">
+        <img src="assets/loading.gif" width="60" height="60" alt="Loading...">
+    </div>
     <div id="itinerary"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.3/axios.min.js"></script>
     <script>
         function generateItinerary() {
-            const apiKey = "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";
-            const places = document.getElementById("places").value;
+            const apiKey = "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";
+            const day = document.getElementById("day").value;
             const budget = document.getElementById("budget").value;
             const preferences = document.getElementById("preferences").value;
-
-            axios.post('https://api.openai.com/v1/completions', {
-                prompt: `Hãy tạo giúp tôi lịch trình du lịch tại Cần Thơ gồm các địa điểm nằm ở Cần Thơ, Việt Nam và .. ${places}, với ngân sách: ${budget} và sở thích cá nhân: ${preferences} thì nên đi đâu ở Cần Thơ?`,
-                max_tokens: 1000,
+            let content;
+            if (day !== 0 && budget !== "" && preferences !== "") {
+                content = `Giúp tôi tạo lịch du lịch Cần Thơ ${day} ngày với ngân sách ${budget} (VNĐ) với sở thích của tôi là ${preferences}.`;
+            } else if (day !== 0 && budget == "" && preferences !== ""){
+                content = `Giúp tôi tạo lịch du lịch Cần Thơ ${day} ngày với ngân sách tuỳ ý (VNĐ) với sở thích của tôi là ${preferences}.`;
+            } else if (day !== 0 && budget !== "" && preferences == "") {
+                content = `Giúp tôi tạo lịch du lịch Cần Thơ ${day} ngày với ngân sách ${budget} (VNĐ) với sở thích tuỳ ý.`;
+            } else {
+                content = `Giúp tôi tạo lịch du lịch Cần Thơ ${day} ngày với ngân sách tuỳ ý (VNĐ) với sở thích tuỳ ý.`;
+            }
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("itinerary").style.display = "none";
+            axios.post('https://api.openai.com/v1/chat/completions', {
+                messages: [{role: "user", content: content}],
+                max_tokens: 1500,
                 n: 1,
                 stop: null,
-                model: "text-davinci-003",
-                temperature: 0.9,
+                model: "gpt-3.5-turbo",
+                temperature: 0.7,
                 top_p: 1,
                 frequency_penalty: 0.1,
                 presence_penalty: 0.0,
             }, {
                 method: "POST",
                 headers: {
-                    'Content-Type': 'application/json;charset=UTF-8',
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${apiKey}`,
+                    Organization: `org-KBnRXaYdZlMk1sAl07JCsSU1`,
                 }
             })
-                .then(response => {
-                    const itinerary = response.data.choices[0].text;
+            .then(response => {
+                console.log(response); // In ra dữ liệu trả về từ API
+                if (response && response.data && response.data.choices && response.data.choices.length > 0) {
+                    const itinerary = response.data.choices[0].message.content;
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("itinerary").style.display = "block";
                     document.getElementById("itinerary").innerHTML = itinerary;
-                })
-                .catch(error => {
-                    console.error('Lỗi khi gọi API OpenAI:', error);
-                });
+                    const formattedItinerary = itinerary.replace(/:(?=\S)/g, ":\n").replace(/(\d+\.\s)/g, "\n$1");
+                } else {
+                    console.error('API trả về dữ liệu không hợp lệ');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi gọi API OpenAI:', error);
+            });
         }
     </script>
+    <script>
+        $(document).on("keypress", ".just-number", function (e) {
+            let charCode = (e.which) ? e.which : e.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+              return false;
+            }
+          });
+          $(document).on('keyup', '.price-format-input', function (e) {
+            let val = this.value;
+            val = val.replace(/,/g, "");
+            if (val.length > 3) {
+              let noCommas = Math.ceil(val.length / 3) - 1;
+              let remain = val.length - (noCommas * 3);
+              let newVal = [];
+              for (let i = 0; i < noCommas; i++) {
+                newVal.unshift(val.substr(val.length - (i * 3) - 3, 3));
+              }
+              newVal.unshift(val.substr(0, remain));
+              this.value = newVal;
+            }
+            else {
+              this.value = val;
+            }
+          });
+          
+          $(document).ready(function(){
+            $('#budget').focus();
+          })
+</script>
 </body>
 
 </html>
